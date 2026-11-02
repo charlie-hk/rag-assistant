@@ -11,9 +11,9 @@ It runs end to end with no API key and no database, using a local embedder, an
 in-memory vector store and a mock LLM. Switch to real embeddings, pgvector or
 Qdrant, and OpenAI or Claude through environment variables.
 
-**[Open the live demo](https://huggingface.co/spaces/Alexhkm/rag-assistant)** -
-the real backend, running this repository's code. It sleeps when idle, so the
-first request after a quiet spell takes a moment to wake it.
+**[Open the live demo](https://rag-assistant.onrender.com)** - the real backend,
+running this repository's code. It is on a free instance that sleeps when idle,
+so the first request after a quiet spell takes about a minute to wake it.
 
 Author: A. Amini
 
@@ -67,13 +67,13 @@ Or in one image:
 
 ```bash
 docker build -t rag-assistant .
-docker run -p 7860:7860 rag-assistant        # http://localhost:7860
+docker run -p 8000:8000 rag-assistant        # http://localhost:8000
 ```
 
-That same image is what the hosted demo runs. `.github/workflows/deploy-hf-space.yml`
-assembles the app, adds the Space's Docker header from `deploy/space-README.md`,
-and pushes it to a Hugging Face Space; it is manual, and it needs an `HF_TOKEN`
-secret on the repository.
+That same image is what the hosted demo runs: `render.yaml` is a blueprint that
+builds this Dockerfile on Render's free instance, with `/api/health` as the
+health check. A host that assigns its own port sets `PORT`, which the image
+honours.
 
 ## Run it
 
