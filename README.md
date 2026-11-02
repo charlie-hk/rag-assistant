@@ -1,5 +1,7 @@
 # RAG Assistant
 
+![RAG Assistant](docs/cover.png)
+
 A production-shaped Retrieval-Augmented Generation assistant: FastAPI backend, a
 LangGraph workflow, source-grounded answers with citations, multi-tenant
 isolation, a prompt-injection guard, and human escalation when the answer is not
