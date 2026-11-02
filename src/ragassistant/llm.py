@@ -11,6 +11,18 @@ class LLMError(RuntimeError):
     pass
 
 
+def _trim(text: str, limit: int) -> str:
+    """Cut at the last sentence that fits, rather than mid-word. A quoted answer
+    that stops half way through a sentence looks like a bug to whoever reads it."""
+    if len(text) <= limit:
+        return text
+    cut = text[:limit]
+    end = max(cut.rfind(". "), cut.rfind("! "), cut.rfind("? "))
+    if end > limit // 3:
+        return cut[: end + 1]
+    return cut.rsplit(" ", 1)[0] + "..."
+
+
 class MockLLM:
     name = "mock"
 
@@ -19,7 +31,7 @@ class MockLLM:
         first = ""
         if "[1]" in context:
             after = context.split("[1]", 1)[1]
-            first = after.split("[2]", 1)[0].strip()[:240]
+            first = _trim(after.split("[2]", 1)[0].strip(), 240)
         if not first:
             return "I don't know based on the provided documents."
         return f"Based on the documents: {first} [1]"

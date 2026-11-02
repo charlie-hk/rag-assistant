@@ -39,4 +39,13 @@ class Assistant:
             citations=result.get("citations", []),
             escalated=bool(result.get("escalated", False)),
             reason=result.get("reason"),
+            path=result.get("path", []),
+            confidence=round(float(result.get("confidence", 0.0)), 4),
+            flagged=result.get("flagged", []),
         )
+
+    def sources(self, tenant_id: str):
+        return self.store.sources(tenant_id)
+
+    def clear(self, tenant_id: str) -> int:
+        return self.store.clear(tenant_id)

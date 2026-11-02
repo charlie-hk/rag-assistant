@@ -11,7 +11,8 @@ node is where a tool call would hang, and escalation is a first-class path.
 """
 from __future__ import annotations
 
-from typing import TypedDict
+import operator
+from typing import Annotated, TypedDict
 
 from langgraph.graph import END, StateGraph
 
@@ -29,19 +30,26 @@ class State(TypedDict, total=False):
     answer: str
     escalated: bool
     reason: str
+    # Appended to by every node, so the caller can see which way the graph went
+    # instead of inferring it from the answer.
+    path: Annotated[list[str], operator.add]
+    flagged: list[str]
 
 
 def build_graph(retriever: Retriever, llm, settings):
     def guard(state: State) -> State:
-        if guards.is_suspicious(state["question"]):
-            return {"escalated": True, "reason": "Flagged possible prompt injection in the question."}
-        return {}
+        hits = guards.scan(state["question"])
+        if hits:
+            return {"escalated": True, "flagged": hits, "path": ["guard"],
+                    "reason": "Flagged possible prompt injection in the question."}
+        return {"flagged": [], "path": ["guard"]}
 
     def retrieve(state: State) -> State:
         if state.get("escalated"):
-            return {}
+            return {"path": ["retrieve (skipped)"]}
         ranked, confidence = retriever.retrieve(state["tenant_id"], state["question"], settings.top_k)
-        return {"chunks": ranked, "citations": to_citations(ranked), "confidence": confidence}
+        return {"chunks": ranked, "citations": to_citations(ranked),
+                "confidence": confidence, "path": ["retrieve"]}
 
     def grade(state: State) -> str:
         # Routing decision: answer only when the best match is confident enough.
@@ -55,7 +63,7 @@ def build_graph(retriever: Retriever, llm, settings):
         ranked = state["chunks"]
         context = guards.wrap_context([c.text for c, _ in ranked])
         text = llm.answer(settings.system_prompt, state["question"], context)
-        return {"answer": text, "escalated": False}
+        return {"answer": text, "escalated": False, "path": ["answer"]}
 
     def escalate(state: State) -> State:
         reason = state.get("reason") or "No sufficiently relevant document was found."
@@ -64,6 +72,7 @@ def build_graph(retriever: Retriever, llm, settings):
             "escalated": True,
             "reason": reason,
             "citations": state.get("citations", []),
+            "path": ["escalate"],
         }
 
     g = StateGraph(State)

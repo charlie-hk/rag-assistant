@@ -50,3 +50,27 @@ class QdrantStore(VectorStore):
             out.append((Chunk(id=str(h.id), tenant_id=tenant_id, source=p["source"],
                               chunk_index=p["chunk_index"], text=p["text"]), float(h.score)))
         return out
+
+    def _tenant_filter(self, tenant_id: str):
+        from qdrant_client.models import FieldCondition, Filter, MatchValue
+
+        return Filter(must=[FieldCondition(key="tenant_id", match=MatchValue(value=tenant_id))])
+
+    def sources(self, tenant_id: str) -> list[tuple[str, int]]:
+        from collections import Counter
+
+        counts: Counter[str] = Counter()
+        offset = None
+        while True:
+            points, offset = self._client.scroll(
+                COLLECTION, scroll_filter=self._tenant_filter(tenant_id),
+                limit=256, offset=offset, with_payload=True, with_vectors=False)
+            counts.update(p.payload["source"] for p in points)
+            if offset is None:
+                break
+        return sorted(counts.items())
+
+    def clear(self, tenant_id: str) -> int:
+        n = sum(c for _, c in self.sources(tenant_id))
+        self._client.delete(COLLECTION, points_selector=self._tenant_filter(tenant_id))
+        return n

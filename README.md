@@ -32,19 +32,61 @@ Author: A. Amini
 - **Prompt-injection guard** (`guards.py`): flags override/exfiltration patterns
   and labels retrieved text as data, not instructions.
 - **Evaluation** (`eval.py`): hit@k and MRR on a labelled retrieval set.
+- **Operator panel** (`web/`): React and TypeScript, served by the API itself.
+
+## The panel
+
+![The panel](docs/panel.png)
+
+`web/` is a React and TypeScript panel for the assistant, served by FastAPI from
+the same origin as the API. It is built to be used, not admired: index documents
+for a tenant, ask, and see what the answer was actually grounded in.
+
+- Every `[n]` in the answer links to the chunk it came from, and each retrieved
+  chunk is marked **used in the answer** or **retrieved only**. Those are
+  different things, and the difference is how you judge a RAG system.
+- The grounding confidence is shown against the threshold it was graded on, so
+  "why did this escalate" is answered on the screen.
+- The route through the graph is drawn with the nodes this question passed
+  through lit up, including retrieval being skipped when the guard stops a
+  prompt injection.
+- Two tenants, so isolation can be checked rather than believed: index under
+  `acme`, switch to `globex`, ask the same question, get nothing.
+
+```bash
+cd web && npm install && npm run build   # into web/dist, served at /
+cd .. && uvicorn ragassistant.api:app --app-dir src --port 8000
+# http://localhost:8000
+```
+
+Or `docker build -t rag-assistant . && docker run -p 8000:8000 rag-assistant`,
+which builds the panel and the API into one image.
 
 ## Run it
 
 ```bash
 pip install -r requirements.txt
 python demo.py                 # ingest sample docs, ask questions, see citations + escalation
-python -m pytest tests/ -q     # tests: answering, escalation, tenant isolation, guard
-uvicorn ragassistant.api:app --app-dir src --port 8000   # the API
+python -m pytest tests/ -q     # 12 tests: answering, escalation, isolation, guard, the API
+npm --prefix web test          # 13 more for the panel
+uvicorn ragassistant.api:app --app-dir src --port 8000   # the API, and the panel if built
 ```
 
-API: `POST /api/ingest` ({tenant_id, documents:[{source,text}]}) and
-`POST /api/chat` ({tenant_id, question}) returning the answer, citations and
-whether it escalated.
+The API:
+
+```
+GET    /api/health                      what is wired: model, store, embedder, thresholds
+GET    /api/samples                     the bundled sample documents
+POST   /api/ingest                      {tenant_id, documents:[{source,text}]}
+GET    /api/sources?tenant_id=          what that tenant has indexed, per source
+DELETE /api/sources?tenant_id=          remove one tenant's data
+POST   /api/chat                        {tenant_id, question}
+```
+
+A chat reply carries the answer and its citations, whether it escalated and why,
+the grounding confidence, the route the graph took, and any guard pattern that
+fired. The diagnostics are part of the contract, not a debug extra: an answer you
+cannot inspect is an answer you cannot trust.
 
 ## Configure (env)
 

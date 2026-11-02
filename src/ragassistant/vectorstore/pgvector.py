@@ -74,3 +74,16 @@ class PgVectorStore(VectorStore):
             out.append((Chunk(id=rid, tenant_id=tenant_id, source=source,
                               chunk_index=idx, text=text), float(score)))
         return out
+
+    def sources(self, tenant_id: str) -> list[tuple[str, int]]:
+        with self._conn() as conn, conn.cursor() as cur:
+            cur.execute("SELECT source, COUNT(*) FROM chunks WHERE tenant_id = %s "
+                        "GROUP BY source ORDER BY source", (tenant_id,))
+            return [(s, int(n)) for s, n in cur.fetchall()]
+
+    def clear(self, tenant_id: str) -> int:
+        with self._conn() as conn, conn.cursor() as cur:
+            cur.execute("DELETE FROM chunks WHERE tenant_id = %s", (tenant_id,))
+            n = cur.rowcount
+            conn.commit()
+        return int(n)

@@ -6,7 +6,7 @@ for anything real.
 """
 from __future__ import annotations
 
-from collections import defaultdict
+from collections import Counter, defaultdict
 
 import numpy as np
 
@@ -34,3 +34,13 @@ class MemoryStore(VectorStore):
         order = np.argsort(sims)[::-1][:k]
         chunks = self._chunks[tenant_id]
         return [(chunks[i], float(sims[i])) for i in order]
+
+    def sources(self, tenant_id: str) -> list[tuple[str, int]]:
+        counts = Counter(c.source for c in self._chunks.get(tenant_id, []))
+        return sorted(counts.items())
+
+    def clear(self, tenant_id: str) -> int:
+        n = len(self._chunks.get(tenant_id, []))
+        self._chunks.pop(tenant_id, None)
+        self._vecs.pop(tenant_id, None)
+        return n
