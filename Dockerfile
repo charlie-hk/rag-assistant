@@ -17,8 +17,9 @@ COPY src/ ./src/
 COPY data/ ./data/
 COPY --from=panel /panel/dist ./web/dist
 
+# 7860 is what Hugging Face Spaces expects; anything else can override PORT.
 ENV PYTHONPATH=/app/src \
-    PORT=8000
+    PORT=7860
 
-EXPOSE 8000
-CMD ["sh", "-c", "uvicorn ragassistant.api:app --host 0.0.0.0 --port ${PORT:-8000}"]
+EXPOSE 7860
+CMD ["sh", "-c", "uvicorn ragassistant.api:app --host 0.0.0.0 --port ${PORT:-7860}"]

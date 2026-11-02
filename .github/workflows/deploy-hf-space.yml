@@ -1,0 +1,39 @@
+name: Deploy to Hugging Face Space
+
+# Manual only: run it from the Actions tab once the Space and the HF_TOKEN
+# secret exist. Nothing here reads the token except the push.
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Assemble the Space tree and push
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          HF_SPACE: Alexhkm/rag-assistant
+        run: |
+          if [ -z "$HF_TOKEN" ]; then
+            echo "HF_TOKEN secret is missing. Add it in Settings > Secrets and variables > Actions." >&2
+            exit 1
+          fi
+
+          # The Space repo is the app plus a Docker header README, which is not
+          # the GitHub README.
+          mkdir -p tree
+          cp -r src data web requirements.txt Dockerfile .dockerignore tree/
+          rm -rf tree/web/node_modules tree/web/dist
+          cp deploy/space-README.md tree/README.md
+
+          cd tree
+          git init -q
+          git config user.email "deploy@github"
+          git config user.name "deploy"
+          git add -A
+          git commit -q -m "Deploy from GitHub ${GITHUB_SHA::7}"
+          git push --force "https://Alexhkm:${HF_TOKEN}@huggingface.co/spaces/${HF_SPACE}" HEAD:main
+
+          echo "Pushed. The Space builds the image and goes live shortly."

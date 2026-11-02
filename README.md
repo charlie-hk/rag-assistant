@@ -11,6 +11,10 @@ It runs end to end with no API key and no database, using a local embedder, an
 in-memory vector store and a mock LLM. Switch to real embeddings, pgvector or
 Qdrant, and OpenAI or Claude through environment variables.
 
+**[Open the live demo](https://huggingface.co/spaces/Alexhkm/rag-assistant)** -
+the real backend, running this repository's code. It sleeps when idle, so the
+first request after a quiet spell takes a moment to wake it.
+
 Author: A. Amini
 
 ## What it does
@@ -59,8 +63,17 @@ cd .. && uvicorn ragassistant.api:app --app-dir src --port 8000
 # http://localhost:8000
 ```
 
-Or `docker build -t rag-assistant . && docker run -p 8000:8000 rag-assistant`,
-which builds the panel and the API into one image.
+Or in one image:
+
+```bash
+docker build -t rag-assistant .
+docker run -p 7860:7860 rag-assistant        # http://localhost:7860
+```
+
+That same image is what the hosted demo runs. `.github/workflows/deploy-hf-space.yml`
+assembles the app, adds the Space's Docker header from `deploy/space-README.md`,
+and pushes it to a Hugging Face Space; it is manual, and it needs an `HF_TOKEN`
+secret on the repository.
 
 ## Run it
 
