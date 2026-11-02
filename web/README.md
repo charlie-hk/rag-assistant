@@ -1,5 +1,7 @@
 # The RAG Assistant panel
 
+**Live:** https://rag-assistant-h9o7.onrender.com
+
 React, Vite, TypeScript in strict mode, Tailwind. It is the operator's view of
 the assistant: what is indexed for a tenant, what the answer was, what it was
 grounded in, and which way the graph went.

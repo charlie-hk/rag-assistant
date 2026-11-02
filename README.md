@@ -11,7 +11,7 @@ It runs end to end with no API key and no database, using a local embedder, an
 in-memory vector store and a mock LLM. Switch to real embeddings, pgvector or
 Qdrant, and OpenAI or Claude through environment variables.
 
-**[Open the live demo](https://rag-assistant.onrender.com)** - the real backend,
+**[Open the live demo](https://rag-assistant-h9o7.onrender.com)** - the real backend,
 running this repository's code. It is on a free instance that sleeps when idle,
 so the first request after a quiet spell takes about a minute to wake it.
 
