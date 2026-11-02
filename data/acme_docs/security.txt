@@ -1,0 +1,15 @@
+ACME Cloud Security and Data
+
+Encryption. All customer data is encrypted at rest using AES-256 and in transit
+using TLS 1.2 or higher. Encryption keys are rotated every 90 days.
+
+Data residency. Customers can choose to store their data in the European Union or
+the United States. The region is selected when the workspace is created and
+cannot be changed afterwards without opening a support ticket.
+
+Access control. ACME supports role-based access with Owner, Admin, Member and
+Viewer roles. Two-factor authentication can be enforced for all members of a
+workspace from the security settings.
+
+Backups. Full backups are taken daily and retained for 30 days. Customers on the
+Business plan can request point-in-time restore within that window.

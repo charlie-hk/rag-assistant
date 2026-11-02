@@ -1,0 +1,17 @@
+ACME Cloud Billing
+
+Plans. ACME Cloud has three plans: Starter at 19 dollars per month, Team at 49
+dollars per month, and Business at 199 dollars per month. All plans are billed
+monthly in advance and can be cancelled at any time from the billing dashboard.
+
+Refunds. New customers can request a full refund within 14 days of their first
+payment. After 14 days, charges are non-refundable, but you can downgrade or
+cancel to avoid the next charge.
+
+Invoices. Invoices are generated on the first day of each billing cycle and are
+available as PDF downloads under Settings, Billing, Invoices. Each invoice shows
+the plan, the billing period, taxes, and the payment method used.
+
+Failed payments. If a payment fails, ACME retries the charge after 3 days and
+again after 7 days. If it still fails, the account moves to a read-only state
+until the balance is paid.

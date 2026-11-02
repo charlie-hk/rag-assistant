@@ -1,0 +1,14 @@
+fastapi>=0.110
+uvicorn[standard]>=0.29
+pydantic>=2.6
+pydantic-settings>=2.2
+numpy>=1.26
+langgraph>=0.2
+pypdf>=4.0
+httpx>=0.27
+
+# Optional, imported lazily when you enable them:
+#   openai            (OpenAI LLM + embeddings)
+#   anthropic         (Claude LLM)
+#   psycopg[binary]   (pgvector store)
+#   qdrant-client     (Qdrant store)
